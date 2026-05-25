@@ -1,0 +1,47 @@
+services:
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+
+    volumes:
+      - .:/app
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      - db
+      - redis
+
+    environment:
+      - DEBUG=1
+
+  db:
+    image: postgres:16
+
+    environment:
+      POSTGRES_DB: ai_ecommerce_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: .
+
+    command: celery -A core worker --pool=solo -l info
+
+    volumes:
+      - .:/app
+
+    depends_on:
+      - db
+      - redis
