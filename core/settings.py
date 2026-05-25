@@ -150,19 +150,19 @@ REST_FRAMEWORK = {
     ]
 }
 
-CACHES = {
-    'default':{
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': os.getenv("REDIS_URL"),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
-    }
-}
+# CACHES = {
+#     'default':{
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': os.getenv("REDIS_URL"),
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         }
+#     }
+# }
 
-CELERY_BROKER_URL = os.getenv("REDIS_URL")
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
+# CELERY_BROKER_URL = os.getenv("REDIS_URL")
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'
 
 REST_FRAMEWORK= {
     'DEFAULT_AUTHENTICATION_CLASSES':(
