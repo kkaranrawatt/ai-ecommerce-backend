@@ -21,6 +21,8 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from rest_framework import permissions
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from drf_yasg.views import get_schema_view # type: ignore
 from drf_yasg import openapi # type: ignore
 
@@ -34,7 +36,27 @@ schema_view= get_schema_view(
     permission_classes= [permissions.AllowAny],
 )
 
+@api_view(['GET'])
+def api_root(request):
+    return Response({
+        "message": "AI Ecommerce Backend API is running 🚀",
+        "version": "v1",
+        "endpoints": {
+            "admin":           "/admin/",
+            "swagger docs":    "/swagger/",
+            "redoc docs":      "/redoc/",
+            "users":           "/api/users/",
+            "products":        "/api/products/",
+            "orders":          "/api/orders/",
+            "recommendations": "/api/recommendations/",
+            "chatbot":         "/api/chatbot/",
+            "token":           "/api/token/",
+            "token refresh":   "/api/token/refresh/",
+        }
+    })
+
 urlpatterns = [
+    path('', api_root, name='api-root'),
     path('admin/', admin.site.urls),
     path('api/users/', include('apps.users.urls')),
     path('api/products/', include('apps.products.urls')),
