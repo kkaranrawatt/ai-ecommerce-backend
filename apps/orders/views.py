@@ -3,11 +3,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from drf_yasg.utils import swagger_auto_schema
 from .services import create_order
 from .tasks import send_order_confirmation_email
 from .models import Order, OrderItem, Cart, CartItem
 from .serializers import OrderSerializer
-from .cart_serializers import CartSerializer
+from .cart_serializers import CartSerializer, CartItemAddSerializer, CartItemDetailSerializer
 from apps.products.models import Product
 
 
@@ -46,6 +47,7 @@ class CreateOrderAPIView(APIView):
 class AddToCartAPIView(APIView):
     permission_classes= [IsAuthenticated]
 
+    @swagger_auto_schema(request_body=CartItemAddSerializer)
     def post(self, request):
         product_id= request.data.get('product')
         quantity= request.data.get('quantity', 1)
@@ -67,23 +69,28 @@ class AddToCartAPIView(APIView):
         cart_item.save()
 
         return Response({
-            "message": "Product added to cart"
+            "message": "Product added to cart",
+            "product": product.name,
+            "quantity": cart_item.quantity
         })
 
     
 class CartAPIView(APIView):
     permission_classes= [IsAuthenticated]
     def get(self, request):
-        cart= Cart.objects.get(user=request.user)
-        cart_items= CartItem.objects.filter(cart= cart)
-        data= []
-        for item in cart_items:
-            data.append({
-                "product": item.product.name,
-                "quantity": item.quantity,
-                "price": item.product.price,
-                "total_price": item.quantity * item.product.price 
-            })
-        return Response(data)
+        try:
+            cart= Cart.objects.get(user=request.user)
+            cart_items= CartItem.objects.filter(cart= cart)
+            data= []
+            for item in cart_items:
+                data.append({
+                    "product": item.product.name,
+                    "quantity": item.quantity,
+                    "price": item.product.price,
+                    "total_price": item.quantity * item.product.price 
+                })
+            return Response(data)
+        except Cart.DoesNotExist:
+            return Response({"message": "Cart is empty"}, status= 200)
         
 # Create your views here.
