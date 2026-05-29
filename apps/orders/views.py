@@ -8,7 +8,7 @@ from .services import create_order
 from .tasks import send_order_confirmation_email
 from .models import Order, OrderItem, Cart, CartItem
 from .serializers import OrderSerializer
-from .cart_serializers import CartSerializer, CartItemAddSerializer, CartItemDetailSerializer
+from .cart_serializers import CartSerializer, CartItemAddSerializer
 from apps.products.models import Product
 
 
