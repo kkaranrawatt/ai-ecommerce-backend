@@ -27,9 +27,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-temporary-key-for-build")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG")== "True"
+DEBUG = os.getenv("DEBUG", "FALSE")== "True"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS_ENV= os.getenv("ALLOWED_HOSTS", "")
+ALLOWED_HOSTS = ALLOWED_HOSTS_ENV.split(",") if ALLOWED_HOSTS_ENV else["*"]
 
 
 # Application definition
@@ -43,12 +44,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_filters',
+    'drf_yasg',
     'apps.users',
     'apps.products',
-    'django_filters',
     'apps.orders',
     'apps.recommendations',
-    'drf_yasg',
     'apps.chatbot',
 ]
 
@@ -96,8 +97,12 @@ WSGI_APPLICATION = 'core.wsgi.application'
 #         'PORT': '5432',
 #     }
 # }
-DATABASES= {
-    'default': dj_database_url.config(default= 'sqlite:///db.sqlite3', conn_max_age=600)
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL', 'sqlite:///db.sqlite3'),
+        conn_max_age=600,
+        ssl_require=os.getenv('DATABASE_URL', '').startswith('postgres')
+    )
 }
 
 # Password validation
@@ -134,21 +139,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
-AUTH_USER_MODEL = 'users.User'
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES':(
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE':2,
+STATIC_URL= 'static/'
+STATIC_ROOT= BASE_DIR/ 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-    'DEFAULT_FILTER_BACKENDS':[
-        'django_filters.rest_framework.DjangoFilterBackend',
-        'rest_framework.filters.SearchFilter',
-        'rest_framework.filters.OrderingFilter',
-    ]
-}
+AUTH_USER_MODEL = 'users.User'
+
 
 # CACHES = {
 #     'default':{
@@ -177,6 +173,4 @@ REST_FRAMEWORK= {
     'PAGE_SIZE': 2,
 }
 
-STATIC_URL= 'static/'
-STATIC_ROOT= BASE_DIR/ 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
