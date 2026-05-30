@@ -7,7 +7,7 @@ from drf_yasg.utils import swagger_auto_schema
 from .services import create_order
 from .tasks import send_order_confirmation_email
 from .models import Order, OrderItem, Cart, CartItem
-from .serializers import OrderSerializer
+from .serializers import OrderSerializer, CreateOrderSerializer
 from .cart_serializers import CartSerializer, CartItemAddSerializer
 from apps.products.models import Product
 
@@ -15,6 +15,7 @@ from apps.products.models import Product
 class CreateOrderAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(request_body= CreateOrderSerializer)
     def post(self, request):
         items = request.data.get('items')
 
@@ -38,7 +39,7 @@ class CreateOrderAPIView(APIView):
             )
 
         serializer = OrderSerializer(order)
-        send_order_confirmation_email.delay(order.id)
+        #send_order_confirmation_email.delay(order.id)
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED
