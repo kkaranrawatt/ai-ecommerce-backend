@@ -69,12 +69,17 @@ class ProductSearchAPIView(APIView):
 
     def get(self, request):
         query = request.GET.get('q')
+        if not query:
+            return Response(
+                {"error": "Query parameter 'q' is required"},
+                status= 400
+            )
         products= Product.objects.filter(
-            Q(name__icontains=query) |
+            Q(name__icontains= query) |
             Q(description__icontains= query) |
             Q(category__name__icontains= query)
         )
-        serializer= ProductReadSerializer(products, many=True)
+        serializer= ProductReadSerializer(products, many= True)
         return Response(serializer.data)
 
 class ProductListAPIView(generics.ListAPIView):
@@ -87,9 +92,15 @@ class ProductListAPIView(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         cached_products= cache.get('products')
+        try:
+            cached_products= cache.get('products')
+        except Exception:
+            cached_products= None
+
         if cached_products:
             print('FETCHED FROM CACHE')
             return Response(cached_products)
+        
         print('FETCHED FROM DATABASE')
         queryset= self.filter_queryset(self.get_queryset())
         page= self.paginate_queryset(queryset)
@@ -97,17 +108,23 @@ class ProductListAPIView(generics.ListAPIView):
         if page is not None:
             serializer= self.get_serializer(page, many=True)
             paginated_response= self.get_paginated_response(serializer.data)
-            cache.set('products', paginated_response.data, timeout= 60)
+            try:
+                cache.set('products', paginated_response.data, timeout= 60)
+            except Exception:
+                pass
             return paginated_response
+        
         serializer= self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
 class AIProductSearchAPIView(APIView):
+    permission_classes= [IsAuthenticated]
+
     def get(self, request):
         query= request.GET.get('q')
 
         if not query:
-            return Response({'error': 'Query paramter required'})
+            return Response({"error": "Query paramter 'q' is required"}, status= 400)
         products= semantic_search(query)
         serializer= ProductReadSerializer(products, many= True)
         return Response(serializer.data)
