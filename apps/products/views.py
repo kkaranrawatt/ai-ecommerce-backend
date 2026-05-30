@@ -12,6 +12,8 @@ from django.views.decorators.cache import cache_page
 from django.core.cache import cache
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -67,6 +69,18 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 class ProductSearchAPIView(APIView):
     permission_classes= [IsAuthenticated]
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'q',
+                openapi.IN_QUERY,
+                description="Search products by name, description or category",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ]
+    )
+
     def get(self, request):
         query = request.GET.get('q')
         if not query:
@@ -119,6 +133,18 @@ class ProductListAPIView(generics.ListAPIView):
 
 class AIProductSearchAPIView(APIView):
     permission_classes= [IsAuthenticated]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'q',
+                openapi.IN_QUERY,
+                description="AI powered search by name, description or category",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ]
+    )
 
     def get(self, request):
         query= request.GET.get('q')
